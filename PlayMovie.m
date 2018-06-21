@@ -136,7 +136,7 @@ if SYSPARAMS.sysmode == 2 || SYSPARAMS.sysmode == 3
             gainseq = Mov.gainseq;
             angleseq = Mov.angleseq;
             stimbeep = Mov.stimbeep;
-            save G:\Seqfile aom0seq aom0pow aom0locx aom0locy aom1seq aom1pow aom1offx aom1offy aom2seq aom2pow aom2offx aom2offy gainseq angleseq stimbeep;
+            save E:\Seqfile aom0seq aom0pow aom0locx aom0locy aom1seq aom1pow aom1offx aom1offy aom2seq aom2pow aom2offx aom2offy gainseq angleseq stimbeep;
             command = ['Sequence' '#' num2str(size(Mov.aom0seq,2)) '#']; %#ok<NASGU>
             netcomm('write',SYSPARAMS.netcommobj,int8(command));
         end

@@ -109,7 +109,7 @@ SYSPARAMS.PupilTCAx=-10000;     %%cmp
 SYSPARAMS.PupilTCAy=-10000;     %%cmp
 SYSPARAMS.PupilTCACorrection=0; %%cmp, 0 is no correction 1 is correction
 
-system = 4; %this is the system number for AOSLO I or AOSLO II or AOSLOIV
+system = 2; %4(?) is the system number for AOSLO I or AOSLO II or AOSLOIV
 if SYSPARAMS.system ~= system
     init_load = 0;
     SYSPARAMS.system = system;
@@ -140,6 +140,7 @@ elseif system == 2
     set(handles.green_on_off, 'Visible', 'Off');
     set(handles.aom2_power_radio, 'Visible', 'Off');
     set(handles.aom3_power_radio, 'Visible', 'Off');
+    OrigFrame = [];
     OrigFrame.ir = uint8(ones(SYSPARAMS.rasterH, SYSPARAMS.rasterV)*50);
     OrigFrame.red = uint8(zeros(SYSPARAMS.rasterH, SYSPARAMS.rasterV));
     set(handles.alignredh, 'Enable', 'On');    
