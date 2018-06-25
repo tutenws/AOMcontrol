@@ -58,6 +58,7 @@ end
 %get the stimulus parameters
 dirname = StimParams.stimpath;
 fprefix = StimParams.fprefix;
+stimFileExtension = 'buf'; % Choices: 'bmp' or 'buf'; 'buf' stimului have higher modulation bit depth
 
 %set up the "movie" parameters
 Mov.dir = dirname;
@@ -334,7 +335,7 @@ if CFG.method == 'q'
                 end
                 
                 %make the stimulus
-                createStimulus(trialIntensity,trial_seq,trial,bar_y,separation,riccos_size_seq(trial,1), lutFlag, logStimFlag);
+                createStimulus(trialIntensity,trial_seq,trial,bar_y,separation,riccos_size_seq(trial,1), lutFlag, logStimFlag, stimFileExtension);
 
                 %tell ICANDI where the stimuli reside
                 if SYSPARAMS.realsystem == 1
@@ -342,7 +343,7 @@ if CFG.method == 'q'
                     StimParams.fprefix = fprefix;
                     StimParams.sframe = 2;
                     StimParams.eframe = 4;
-                    StimParams.fext = 'bmp';
+                    StimParams.fext = stimFileExtension;
                     Parse_Load_Buffers(0);
                 end
                 
@@ -542,7 +543,7 @@ else
 end
 
 
-function createStimulus(trialIntensity, trial_seq, trial, bar_y, separation, stimsize, lutFlag, logStimFlag)
+function createStimulus(trialIntensity, trial_seq, trial, bar_y, separation, stimsize, lutFlag, logStimFlag, stimFileExtension)
 % global offset
 CFG = getappdata(getappdata(0,'hAomControl'),'CFG');
 
@@ -687,20 +688,40 @@ elseif strcmp(CFG.subject_response, 'y')
     
 end
 
-%write the stimulus image to the tempStimulus folder
+% Write the stimulus image to the tempStimulus folder
+% Check that it exists
 if isdir([pwd,'\tempStimulus']) == 0;
     mkdir(pwd,'tempStimulus');
-    cd([pwd,'\tempStimulus']);
-    blank_im = ones(size(stim_im,1),size(stim_im,2));
+end
+% Change into "tempStimulus" directory
+cd([pwd,'\tempStimulus']);
+blank_im = ones(size(stim_im,1),size(stim_im,2));
+if strcmp(stimFileExtension, 'bmp') == 1
     imwrite(stim_im,'frame2.bmp');
     imwrite(blank_im,'frame3.bmp');
+    imwrite(blank_im, 'frame4.bmp');
+elseif strcmp(stimFileExtension, 'buf') == 1
+    % Frame 2 (the stimulus image)
+    fid = fopen('frame2.buf', 'w');
+    fwrite(fid, size(stim_im, 2), 'uint16');
+    fwrite(fid, size(stim_im, 1), 'uint16');
+    fwrite(fid, stim_im, 'double');
+    fclose(fid);
+    % Frame 3 (blank for now)
+    fid = fopen('frame3.buf', 'w');
+    fwrite(fid, size(blank_im, 2), 'uint16');
+    fwrite(fid, size(blank_im, 1), 'uint16');
+    fwrite(fid, blank_im, 'double');
+    fclose(fid);
+    % Frame 4 (blank for now)
+    fid = fopen('frame4.buf', 'w');
+    fwrite(fid, size(blank_im, 2), 'uint16');
+    fwrite(fid, size(blank_im, 1), 'uint16');
+    fwrite(fid, blank_im, 'double');
+    fclose(fid);
 else
-    cd([pwd,'\tempStimulus']);
+    error('Stimulus file type not supported; should be either .buf or .bmp')
 end
-blank_im = ones(size(stim_im,1),size(stim_im,2));
-imwrite(stim_im,'frame2.bmp');
-imwrite(blank_im,'frame3.bmp');
-imwrite(blank_im,'frame4.bmp');
 cd ..;
 
 function RiccosFitting(log_stim_sizes, theThreshold, f1,logStimFlag)
@@ -793,19 +814,19 @@ if isdir([pwd,'\tempStimulus']) == 0;
     cd([pwd,'\tempStimulus']);
     
     imwrite(dummy,'frame2.bmp');
-    %     fid = fopen('frame2.buf','w');
-    %     fwrite(fid,size(dummy,2),'uint16');
-    %     fwrite(fid,size(dummy,1),'uint16');
-    %     fwrite(fid, dummy, 'double');
-    %     fclose(fid);
+        fid = fopen('frame2.buf','w');
+        fwrite(fid,size(dummy,2),'uint16');
+        fwrite(fid,size(dummy,1),'uint16');
+        fwrite(fid, dummy, 'double');
+        fclose(fid);
 else
     cd([pwd,'\tempStimulus']);
     delete ('*.*');
     imwrite(dummy,'frame2.bmp');
-    %     fid = fopen('frame2.buf','w');
-    %     fwrite(fid,size(dummy,2),'uint16');
-    %     fwrite(fid,size(dummy,1),'uint16');
-    %     fwrite(fid, dummy, 'double');
-    %     fclose(fid);
+        fid = fopen('frame2.buf','w');
+        fwrite(fid,size(dummy,2),'uint16');
+        fwrite(fid,size(dummy,1),'uint16');
+        fwrite(fid, dummy, 'double');
+        fclose(fid);
 end
 cd ..;

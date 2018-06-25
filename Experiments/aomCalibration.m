@@ -16,13 +16,15 @@ CFG.stimShape = 'square'; % Stimulus shape
 CFG.stimGain = 0; % Do not engage retinal tracking
 CFG.videoDurSec = 1; % Video duration, in seconds
 CFG.fps = 16; % Number of frames per second
-CFG.aomNumber = 0; % 0 = imaging channel (i.e decrement channel); 1 and 2 = stimulation channels
-CFG.hysteresis = 1; % Set to 1 if you want to ascend in power, followed by a decension; else set to zero
+CFG.aomNumber = 1; % 0 = imaging channel (i.e decrement channel); 1 and 2 = stimulation channels
+CFG.hysteresis = 0; % Set to 1 if you want to ascend in power, followed by a decension; else set to zero
 CFG.numRepeatsPerLevel = 1; % Number of measurements per level;
-CFG.calStepSize = 10; % 8-bit units; roughly 50 levels
+CFG.calStepSize = 10; % 8-bit units run from 0 to 255;
 CFG.subjectID = 'calibration';
 CFG.logData = 1; % Set to 1 if you want to input the power meter readings via Matlab
 CFG.calibrationWavelength = 550; % in nm
+CFG.stimFileExtension = 'buf';
+
 
 %--------------------------------------------------------------------------
 % Get experiment config data stored in appdata for 'hAomControl'
@@ -128,13 +130,13 @@ if CFG.hysteresis == 1
     calSeq(:,1) = [calSeqTemp; flipud(calSeqTemp)];
     calSeq(:,2) = [zeros(size(calSeqTemp)); ones(size(calSeqTemp))];
 else
-    calSeq(:,2) = zeros(size(calSeqTemp));
+    calSeq = [calSeqTemp zeros(size(calSeqTemp))];
 end
 
 powerReadings = nan(size(calSeq));
 
 % Time to get started
-speak('Align and zero power meter. Once you are ready, press any key to begin');
+Speak('Align and zero power meter. Once you are ready, press any key to begin');
 pause;
 
 for trialNum = 1:length(calSeq);
@@ -142,7 +144,7 @@ for trialNum = 1:length(calSeq);
     % Start each measurement by hitting a key
     pause;
     if trialNum == 1
-        speak('Beginning calibration');
+        Speak('Beginning calibration');
         WaitSecs(2);
     end   
     
@@ -153,9 +155,9 @@ for trialNum = 1:length(calSeq);
     if SYSPARAMS.realsystem == 1
         StimParams.stimpath = Mov.dir;
         StimParams.fprefix = Mov.pfx;
-        StimParams.sframe = 2;
-        StimParams.eframe = 4;
-        StimParams.fext = 'bmp';
+        StimParams.sframe = bmpIndex;
+        StimParams.eframe = bmpIndex;
+        StimParams.fext = CFG.stimFileExtension;
         Parse_Load_Buffers(0);
     end
     Mov.frm = 1;
@@ -242,15 +244,18 @@ stimIm = ones(stimsize,stimsize).*imIntensity./255;
 % Write the stimulus image to the tempStimulus folder
 if isdir([pwd,'\tempStimulus']) == 0
     mkdir(pwd,'tempStimulus');
-    cd([pwd,'\tempStimulus']);
-    imwrite(stimIm,['frame' num2str(bmpIndex) '.bmp']);
-else
-    cd([pwd,'\tempStimulus']);
 end
-blankIm = zeros(size(stimIm));
+cd([pwd,'\tempStimulus']);
+
+% Write as a bmp (8-bit)
 imwrite(stimIm,['frame' num2str(bmpIndex) '.bmp']);
-imwrite(blankIm,'frame3.bmp');
-imwrite(blankIm,'frame4.bmp');
+
+% And also as a .buf file (~10-bit modulation)
+fid = fopen(['frame' num2str(bmpIndex) '.buf'], 'w');
+fwrite(fid, size(stimIm,2), 'uint16');
+fwrite(fid, size(stimIm,1), 'uint16');
+fwrite(fid, stimIm, 'double');
+fclose(fid);
 cd ..;
 
 
@@ -260,17 +265,17 @@ if isdir([pwd,'\tempStimulus']) == 0
     mkdir(pwd,'tempStimulus');
     cd([pwd,'\tempStimulus']);
     imwrite(dummy,'frame2.bmp');
-    %     fid = fopen('frame2.buf','w');
-    %     fwrite(fid,size(dummy,2),'uint16');
-    %     fwrite(fid,size(dummy,1),'uint16'); fwrite(fid, dummy, 'double');
-    %     fclose(fid);
+    fid = fopen('frame2.buf','w');
+    fwrite(fid,size(dummy,2),'uint16');
+    fwrite(fid,size(dummy,1),'uint16'); fwrite(fid, dummy, 'double');
+    fclose(fid);
 else
     cd([pwd,'\tempStimulus']);
     delete ('*.*');
     imwrite(dummy,'frame2.bmp');
-    %     fid = fopen('frame2.buf','w');
-    %     fwrite(fid,size(dummy,2),'uint16');
-    %     fwrite(fid,size(dummy,1),'uint16'); fwrite(fid, dummy, 'double');
-    %     fclose(fid);
+        fid = fopen('frame2.buf','w');
+        fwrite(fid,size(dummy,2),'uint16');
+        fwrite(fid,size(dummy,1),'uint16'); fwrite(fid, dummy, 'double');
+        fclose(fid);
 end
 cd ..;
