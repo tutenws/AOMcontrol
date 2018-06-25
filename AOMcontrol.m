@@ -2014,7 +2014,7 @@ elseif strcmp(disp_mode, 'Config & Start')
     exp_name = char(exp_name{exp_num});
     run(exp_name);    
     %prompt user to align raster and press start buttom when ready
-    set(handles.aom1_state, 'String', 'On - Experiment Mode - Press Start to Begin Experiment');    
+    set(handles.aom1_state, 'String', 'On - Experiment Mode - Press Config & Start to Begin Experiment');    
     set(handles.alignh_slider, 'Enable', 'on');    
 end
 

@@ -24,9 +24,9 @@ if isstruct(getappdata(getappdata(0,'hAomControl'),'CFG')) == 1;
         VideoParams.vidprefix = CFG.vidprefix;
         set(handles.aom1_state, 'String', 'Configuring Experiment...');
         if SYSPARAMS.realsystem == 1 && SYSPARAMS.board == 'm'
-            set(handles.aom1_state, 'String', 'Off - Press Start Button To Begin Experiment');
+            set(handles.aom1_state, 'String', 'Off - Experiment ready; press start button to initiate');
         else
-            set(handles.aom1_state, 'String', 'On - Press Start Button To Begin Experiment');
+            set(handles.aom1_state, 'String', 'On - Experiment ready; press start button to initiate');
         end
         if CFG.record == 1;
             VideoParams.videodur = CFG.videodur;
@@ -39,7 +39,7 @@ if isstruct(getappdata(getappdata(0,'hAomControl'),'CFG')) == 1;
         set(handles.im_popup1, 'Enable', 'off');
         set(handles.display_button, 'String', 'Running Exp...');
         set(handles.display_button, 'Enable', 'off');
-        set(handles.aom1_state, 'String', 'On - Experiment Mode - Running Experiment');
+        set(handles.aom1_state, 'String', 'On - Experiment mode - Running experiment...');
     else
         return;
     end
