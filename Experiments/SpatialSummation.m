@@ -58,7 +58,7 @@ end
 %get the stimulus parameters
 dirname = StimParams.stimpath;
 fprefix = StimParams.fprefix;
-stimFileExtension = 'buf'; % Choices: 'bmp' or 'buf'; 'buf' stimului have higher modulation bit depth
+stimFileExtension = 'bmp'; % Choices: 'bmp' or 'buf'; 'buf' stimului have higher modulation bit depth
 
 %set up the "movie" parameters
 Mov.dir = dirname;
