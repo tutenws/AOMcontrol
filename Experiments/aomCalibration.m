@@ -23,12 +23,11 @@ CFG.calStepSize = 10; % 8-bit units run from 0 to 255;
 CFG.subjectID = 'calibration';
 CFG.logData = 1; % Set to 1 if you want to input the power meter readings via Matlab
 CFG.calibrationWavelength = 550; % in nm
-CFG.stimFileExtension = 'buf';
+CFG.stimFileExtension = 'buf'; % 'bmp' or 'buf'
 
 
 %--------------------------------------------------------------------------
 % Get experiment config data stored in appdata for 'hAomControl'
-hAomControl = getappdata(0,'hAomControl');
 StimParams.stimpath = [cd '\tempStimulus\'];
 VideoParams.vidprefix = CFG.subjectID;
 set(handles.aom1_state, 'String', 'Configuring Experiment...');
@@ -40,7 +39,7 @@ end
 if CFG.record == 1
     VideoParams.videodur = CFG.vidDurSec;
 end
-psyfname = set_VideoParams_PsyfileName();
+
 hAomControl = getappdata(0,'hAomControl');
 Parse_Load_Buffers(1);
 set(handles.image_radio1, 'Enable', 'off');
@@ -139,14 +138,14 @@ powerReadings = nan(size(calSeq));
 Speak('Align and zero power meter. Once you are ready, press any key to begin');
 pause;
 
-for trialNum = 1:length(calSeq);
+for trialNum = 1:length(calSeq)
     
     % Start each measurement by hitting a key
     pause;
     if trialNum == 1
         Speak('Beginning calibration');
         WaitSecs(2);
-    end   
+    end
     
     % Make the stimulus
     createStimulus(calSeq(trialNum,1), CFG.stimSize, 0, 0, bmpIndex)
@@ -168,7 +167,7 @@ for trialNum = 1:length(calSeq);
     setappdata(hAomControl, 'Mov',Mov);
     VideoParams.vidrecord = 0;
     VideoParams.vidname = [CFG.subjectID '_' sprintf('%03d',trialNum)];
-    if trialNum<6;
+    if trialNum<6
         Speak(['Test intensity ' num2str(calSeq(trialNum))]);
     else
         Speak(num2str(calSeq(trialNum,1)));
@@ -186,15 +185,15 @@ if CFG.logData
     % Separate out the data
     intensityLevels = unique(calSeq(:,1));
     calDataMatrix = nan(length(intensityLevels), 2);
-    for n = 0:1;
-        for levelIndex = 1:length(intensityLevels);
+    for n = 0:1
+        for levelIndex = 1:length(intensityLevels)
             [ind] = find(calSeq(:,1)==intensityLevels(levelIndex) & calSeq(:,2) == n);
             if ~isempty(ind)
                 calDataMatrix(levelIndex,n+1) = mean(powerReadings(ind));
             end
         end
     end
-    maxMean = max(mean(calDataMatrix,2));    
+    maxMean = max(mean(calDataMatrix,2));
     figure, hold on
     % Plot ascending data
     plot(intensityLevels, calDataMatrix(:,1)./maxMean, 'rs', 'MarkerFaceColor', 'none', 'MarkerSize', 8, 'LineWidth', 2);
@@ -204,7 +203,7 @@ if CFG.logData
     end
     % Plot mean data
     errorbar(intensityLevels, mean(calDataMatrix,2)./maxMean, std(calDataMatrix,[],2)./maxMean, 'ko', 'Color', 'k', 'MarkerFaceColor', 'k', 'MarkerSize', 8)
-        
+    
     hLeg = legend('Ascending', 'Descending', 'Mean');
     set(hLeg, 'Location', 'NorthWest');
     xlabel('Bitmap level (0-255)');
@@ -273,9 +272,9 @@ else
     cd([pwd,'\tempStimulus']);
     delete ('*.*');
     imwrite(dummy,'frame2.bmp');
-        fid = fopen('frame2.buf','w');
-        fwrite(fid,size(dummy,2),'uint16');
-        fwrite(fid,size(dummy,1),'uint16'); fwrite(fid, dummy, 'double');
-        fclose(fid);
+    fid = fopen('frame2.buf','w');
+    fwrite(fid,size(dummy,2),'uint16');
+    fwrite(fid,size(dummy,1),'uint16'); fwrite(fid, dummy, 'double');
+    fclose(fid);
 end
 cd ..;
